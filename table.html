@@ -1,0 +1,72 @@
+<!DOCTYPE>
+<html>
+	<head>
+		<title>title</title>
+		<script type="text/javascript" src='jquery-3.1.0.min.js' ></script>
+		<script type="text/javascript">
+			var arr = [];
+			$(document).ready(function(){
+			    getListing();
+			});
+			var getListing = function(){
+				$.ajax({url: "listing.php", success: function(result){
+	            	arr = JSON.parse(result);
+	            	var table = '<table style="width:50%"><tr><th>Firstname</th><th>Addr</th><th colspan="2">Action</th></tr>';
+	            	for(var a in arr){
+	            		table += '<tr><td>'+arr[a].name+'</td>';
+	            		table += '<td>'+arr[a].addr+'</td>';
+	            		table += '<td><input type="button" value="Edit" onclick="editEntry('+a+')"></td>';
+	            		table += '<td><input type="button" value="Delete" onclick="deleteEntry('+a+')"></td></tr>';
+	            	}
+	            	table += '</table>';
+	            	$("#listing").html(table);
+	        	}});
+			};
+			var upsert = function(){
+				if($('#entryId').val() == ''){
+					$.post( "insert.php",{ name:$('#name').val(), addr:$('#addr').val() }, function(data) {
+						alert(data);
+						getListing();
+					});
+				}
+				else{
+					$.post( "update.php",{ id: $('#entryId').val(), name:$('#name').val(), addr:$('#addr').val()  }, function(data) {
+						alert(data);
+						getListing();
+					});
+				}
+				Clear();
+			};
+			var editEntry = function(index){
+				$('#name').val(arr[index].name);
+				$('#addr').val(arr[index].addr);
+				$('#entryId').val(arr[index].id);
+			}
+
+			var Clear = function(){
+				$('#name').val("");
+				$('#addr').val("");
+				$('#entryId').val("");
+			}
+
+			var deleteEntry = function(index){
+				Clear();
+				$.post( "delete.php",{ id:arr[index].id }, function(data) {
+					alert(data);
+					getListing();
+				});
+			};
+
+		</script>
+	</head>
+	<body>
+		<input type="hidden" id="entryId">
+		First name: &nbsp<input type="text" id="name">
+		addr:&nbsp<input type="text" id="addr">
+		<input type="button" value="save" onclick="upsert()">
+		<input type="button" value="Clear" onclick="Clear()">
+		<div id='listing'>
+			
+		</div>
+	</body>
+</html>
